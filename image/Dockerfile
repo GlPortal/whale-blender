@@ -1,5 +1,4 @@
 FROM base/archlinux
-MAINTAINER Juraj Oravec <sgd.orava@gmail.com>
 
 RUN pacman -Syu --noconfirm && \
   pacman -S --noconfirm \
