@@ -1,0 +1,69 @@
+#!/bin/python
+# -*- coding: utf-8 -*-
+
+import os
+import subprocess
+
+from prettytable import PrettyTable
+
+
+def main():
+	"""Execute available tests"""
+	tests = browse(directory=".", extension="py")
+	results = {}
+	exitCode = 0
+
+	for test in tests:
+		blendFilePath = os.path.join("data", "blend", test.replace(".py", ".blend"))
+		blendFile = (" " + blendFilePath) if os.path.isfile(blendFilePath) else ""
+
+		blenderCommand = "blender -b -noaudio" + blendFile + " --python " + test
+		testExitCode = subprocess.call(blenderCommand.split(" "))
+
+		results[test] = testExitCode
+
+		if testExitCode:
+			exitCode = testExitCode
+
+	print(resultsOverview(results))
+
+	return(exitCode)
+
+
+def browse(directory, extension='', blacklist=None):
+	"""Return list of files in the given directory"""
+	blacklist = blacklist or []
+	entries = []
+	path = os.path.expanduser(directory)
+
+	if os.path.isdir(path):
+		for entry in os.listdir(path):
+			if entry not in blacklist:
+				if os.path.isfile(os.path.join(path, entry)):
+					if extension:
+						if entry.endswith("." + extension):
+							entries.append(entry)
+					else:
+						entries.append(entry)
+
+	return entries
+
+
+def resultsOverview(results):
+	"""Create results overview"""
+	exitCodes = {
+		0: "OK",
+		1: "ERROR"
+	}
+	table = PrettyTable(["Test file", 'Result'])
+	table.align = "l"
+
+	for key, value in results.items():
+		table.add_row([key, exitCodes[value]])
+
+	return table
+
+
+if __name__ == "__main__":
+	exitCode = main()
+	exit(exitCode)
